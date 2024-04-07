@@ -57,11 +57,11 @@ public class PlayerController : MonoBehaviour
     //Inputs
     private PlayerInput playerInput;
 
-    //Physics
-    [HideInInspector] public Rigidbody rb;
+    [Header("Misc")]
     public Collider col;
     Vector3 moveDirection;
     public Transform orientation;
+    [HideInInspector] public Rigidbody rb;
 
 
     //Grabbing
@@ -209,6 +209,7 @@ public class PlayerController : MonoBehaviour
         head.transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
         camera.transform.rotation = Quaternion.Lerp(camera.transform.rotation, head.transform.rotation, Time.deltaTime * lookSpeed);
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
+        //orientation.transform.Rotate(new Vector3(0, yRotation,0) * lookSpeed, Space.World);
     }
 
     private void HandleInput()
