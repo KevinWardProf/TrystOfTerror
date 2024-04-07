@@ -97,21 +97,21 @@
                 },
                 {
                     "name": "Crouch",
-                    "type": "Button",
+                    "type": "Value",
                     "id": "9e8852fe-95a9-4146-a224-9978fbfc3f76",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Walk",
-                    "type": "Button",
+                    "type": "Value",
                     "id": "432b0c31-2ca2-43d1-8efe-f814ddd9c1a6",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [

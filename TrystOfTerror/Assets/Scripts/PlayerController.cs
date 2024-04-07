@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -18,6 +19,12 @@ public class PlayerController : MonoBehaviour
     private MovementState movementState;
     public float groundDrag;
 
+    [Header("Looking")]
+    public float xRotation;
+    public float yRotation;
+    public float mouseSensitivity;
+    public GameObject head;
+
     [Header("Jumping")]
     public float jumpForce;
     public float jumpCooldown;
@@ -28,6 +35,7 @@ public class PlayerController : MonoBehaviour
     public float crouchSpeed;
     public float crouchYScale;
     private float startYScale;
+    public bool isCrouching;
 
     [Header("Ground Check")]
     public float playerHeight;
@@ -41,7 +49,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Statistics")]
     public int health;
-    public enum MoraleState {bold, determined, calm, frightened, panicked}
+    public enum MoraleState { bold, determined, calm, frightened, panicked }
     public MoraleState moraleState;
     public CharacterStats stats;
     //Inputs
@@ -49,13 +57,13 @@ public class PlayerController : MonoBehaviour
 
     //Physics
     [HideInInspector] public Rigidbody rb;
-    [HideInInspector] public bool canJump;
-    [HideInInspector] public bool isCrouching;
+    public Collider col;
     Vector3 moveDirection;
-    //public Transform orientation; Not needed, we can use camera direction
+    public Transform orientation;
 
     //Camera
-    Camera camera;
+    GameObject camera;
+    public float lookSpeed;
 
 
     //Grabbing
@@ -65,16 +73,31 @@ public class PlayerController : MonoBehaviour
     {
         stats = new CharacterStats(); //Todo add settings list ref/character creation??
         rb = GetComponent<Rigidbody>();
-        canJump = true;
-        startYScale = 0.1f;
-        camera = GetComponentInChildren<Camera>();
+        col = GetComponent<Collider>();
+        readyToJump = true;
+        startYScale = 1f;
+        camera = GameObject.FindWithTag("MainCamera");
         playerInput = GetComponent<PlayerInput>();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = true;
     }
 
     private void Update()
     {
         // ground check
-        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
+        RaycastHit hitInfo;
+        Color rayColor;
+        //grounded = !(Physics.Raycast(col.transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround));
+        grounded = Physics.Raycast(col.bounds.center, Vector3.down, out hitInfo, col.bounds.extents.y + 5f, whatIsGround);
+        if (grounded)
+        {
+            rayColor = Color.green;
+        }
+        else
+        {
+            rayColor = Color.red;
+        }
+        Debug.DrawRay(col.bounds.center, Vector3.down * (col.bounds.extents.y + 5f), rayColor);
 
         HandleInput();
         SpeedControl();
@@ -89,19 +112,20 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         HandleMovement();
+        HandleLook();
     }
 
     private void MovementStateHandler()
     {
         // Mode - Crouching
-        if (playerInput.actions["Crouch"].triggered)
+        if (playerInput.actions["Crouch"].ReadValue<float>() == 1)
         {
             movementState = MovementState.crouching;
             moveSpeed = crouchSpeed;
         }
 
         // Mode - Walking
-        else if (grounded && playerInput.actions["Walk"].triggered)
+        else if (grounded && playerInput.actions["Walk"].ReadValue<float>() == 1)
         {
             movementState = MovementState.walking;
             moveSpeed = walkSpeed;
@@ -146,12 +170,12 @@ public class PlayerController : MonoBehaviour
     public void HandleMovement()
     {
         // calculate movement direction
-        //moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput; //TODO Remove
         Vector2 moveInput = playerInput.actions["Move"].ReadValue<Vector2>();
         Vector3 moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
-        moveDirection = moveDirection.x * camera.transform.right + moveDirection.z * camera.transform.forward;
+        //moveDirection = moveDirection.x * camera.transform.right + moveDirection.z * camera.transform.forward; //Unless we are flying, this does not work.
         //moveSpeed = moveSpeed + stats.Attributes.agility.GetValue(); //Maybe we should calculate this when setting up character stats //TODO
-        
+        moveDirection = orientation.forward * moveInput.y + orientation.right * moveInput.x;
+
         // on slope
         if (OnSlope() && !exitingSlope)
         {
@@ -172,10 +196,27 @@ public class PlayerController : MonoBehaviour
         // turn gravity off while on slope
         rb.useGravity = !OnSlope();
     }
+
+    private void HandleLook()
+    {
+        camera.transform.position = head.transform.position;
+        Physics.Raycast(camera.transform.position, Vector3.forward, camera.transform.position.y + 5f);
+        Debug.DrawRay(camera.transform.position, Vector3.forward * (camera.transform.position.y + 5f), Color.blue);
+        
+        Vector2 lookInput = playerInput.actions["Look"].ReadValue<Vector2>();
+
+        yRotation += lookInput.x * Time.deltaTime * mouseSensitivity;
+        xRotation -= lookInput.y * Time.deltaTime * mouseSensitivity;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+        head.transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
+        camera.transform.rotation = Quaternion.Lerp(camera.transform.rotation, head.transform.rotation, Time.deltaTime * lookSpeed);
+        orientation.rotation = Quaternion.Euler(0, yRotation, 0);
+    }
+
     private void HandleInput()
     {
         // when to value -- todo
-        
+
         // when to jump
         if (playerInput.actions["Jump"].triggered && readyToJump && grounded)
         {
@@ -186,23 +227,22 @@ public class PlayerController : MonoBehaviour
             Invoke(nameof(ResetJump), jumpCooldown);
         }
 
+        //Crouch
+
         // start crouch
-        if (playerInput.actions["Crouch"].triggered && !isCrouching)
+        if (playerInput.actions["Crouch"].ReadValue<float>() == 1)
         {
             transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
-            rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
-            isCrouching = true;
+            rb.AddForce(Vector3.down * 1f, ForceMode.Impulse);
         }
-
-        // stop crouch
-        if (playerInput.actions["Crouch"].triggered && isCrouching)
+        else // stop crouch 
         {
             transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
-            isCrouching = false;
+
         }
     }
 
-    private void Jump() 
+    private void Jump()
     {
         exitingSlope = true;
 
@@ -212,7 +252,7 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
     }
 
-    private void ResetJump() 
+    private void ResetJump()
     {
         readyToJump = true;
 
