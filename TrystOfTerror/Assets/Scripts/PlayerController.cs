@@ -24,6 +24,8 @@ public class PlayerController : MonoBehaviour
     public float yRotation;
     public float mouseSensitivity;
     public GameObject head;
+    public float lookSpeed;
+    GameObject camera;
 
     [Header("Jumping")]
     public float jumpForce;
@@ -60,10 +62,6 @@ public class PlayerController : MonoBehaviour
     public Collider col;
     Vector3 moveDirection;
     public Transform orientation;
-
-    //Camera
-    GameObject camera;
-    public float lookSpeed;
 
 
     //Grabbing
@@ -202,7 +200,7 @@ public class PlayerController : MonoBehaviour
         camera.transform.position = head.transform.position;
         Physics.Raycast(camera.transform.position, Vector3.forward, camera.transform.position.y + 5f);
         Debug.DrawRay(camera.transform.position, Vector3.forward * (camera.transform.position.y + 5f), Color.blue);
-        
+
         Vector2 lookInput = playerInput.actions["Look"].ReadValue<Vector2>();
 
         yRotation += lookInput.x * Time.deltaTime * mouseSensitivity;
@@ -233,12 +231,16 @@ public class PlayerController : MonoBehaviour
         if (playerInput.actions["Crouch"].ReadValue<float>() == 1)
         {
             transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
-            rb.AddForce(Vector3.down * 1f, ForceMode.Impulse);
+            if (isCrouching == false)
+            {
+                rb.AddForce(Vector3.down * 1f, ForceMode.Impulse);
+                isCrouching = true;
+            }
         }
         else // stop crouch 
         {
             transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
-
+            isCrouching = false;
         }
     }
 
