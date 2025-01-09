@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,6 +6,8 @@ using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.HID;
+using UnityEngine.Pool;
 
 public class PlayerController : MonoBehaviour
 {
@@ -49,6 +52,24 @@ public class PlayerController : MonoBehaviour
     private RaycastHit slopeHit;
     private bool exitingSlope;
 
+    [Header("Grabbing")]
+    public Transform BothHandGrabPos;
+    public Transform RightHandGrabPos;
+    public Transform LeftHandGrabPos;
+    //Throw Force is Calculated in stats
+    //pickUpRange is Calculated in stats
+    [Tooltip("Whether we want to use raw value or the calculated throw force.")]
+    public bool rawPower;
+    //grabbedObjectRotationSpeed is Calculated in stats
+    public bool ObjectInBothHand;
+    public bool ObjectInRightHand;
+    public bool ObjectInLeftHand;
+    public GameObject ObjectGrabbed;
+    public Rigidbody ObjectGrabbedRigidbody;
+    public bool canDrop;
+    public enum HandsState { lowered, raised };
+    public HandsState handsState;
+
     [Header("Statistics")]
     public int health;
     public enum MoraleState { bold, determined, calm, frightened, panicked }
@@ -62,9 +83,6 @@ public class PlayerController : MonoBehaviour
     Vector3 moveDirection;
     public Transform orientation;
     [HideInInspector] public Rigidbody rb;
-
-
-    //Grabbing
 
 
     private void Start()
@@ -243,6 +261,81 @@ public class PlayerController : MonoBehaviour
             transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
             isCrouching = false;
         }
+
+        //Handle Grabbing
+        //Two Hands
+        if ((handsState == HandsState.lowered && playerInput.actions["RightHandHeavy"].triggered)
+            && (handsState == HandsState.lowered && playerInput.actions["LeftHandHeavy"].triggered))
+        {
+            //Check if Both Hand Obj are not occupied
+
+        }
+        //Right Hand
+        else if (handsState == HandsState.lowered && playerInput.actions["RightHandHeavy"].triggered)
+        {
+            //Check if Right Hand Obj occupied
+
+        }
+        //Left Hand
+        else if (handsState == HandsState.lowered && playerInput.actions["LeftHandHeavy"].triggered)
+        {
+            //Check if Left Hand Obj occupied
+
+        }
+    }
+
+    private void GrabObject(bool ObjectInHand, CharacterStats stats, bool isRightHand)
+    {
+        if (!ObjectInHand)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, stats.grabRange))
+            {
+                if (hit.transform.gameObject.tag == "Prop")
+                {
+                    if (hit.transform.gameObject.GetComponent<Prop>().needsTwoHandsToPickUp)
+                    {
+                        HoldObject(hit.transform.gameObject, 0);
+                    }
+                    else
+                    {
+                        if (isRightHand)
+                        {
+                            HoldObject(hit.transform.gameObject, 1);
+                        }
+                        else 
+                        {
+                            HoldObject(hit.transform.gameObject, 2);
+                        }
+                    }
+                }
+            }
+        }
+        //Assume User has pushed 
+    }
+    private void HoldObject(GameObject grabbedObject, int handIndex) 
+    {
+        ObjectGrabbed = grabbedObject;
+        ObjectGrabbedRigidbody = ObjectGrabbed.GetComponent<Rigidbody>(); //assign Rigidbody
+        ObjectGrabbedRigidbody.isKinematic = true;
+        if (handIndex == 0)
+        {
+            ObjectGrabbedRigidbody.transform.parent = BothHandGrabPos.transform; //parent object to holdposition
+        }
+        else if (handIndex == 1)
+        {
+            ObjectGrabbedRigidbody.transform.parent = RightHandGrabPos.transform; //parent object to holdposition
+        }
+        else if (handIndex == 2)
+        {
+            ObjectGrabbedRigidbody.transform.parent = LeftHandGrabPos.transform; //parent object to holdposition
+        }
+        ObjectGrabbed.layer = LayerMask.NameToLayer("holdLayer"); //change the object layer to the holdLayer
+                                                                  //make sure object doesnt collide with player, it can cause weird bugs
+        Physics.IgnoreCollision(ObjectGrabbed.GetComponent<Collider>(), transform.GetComponent<Collider>(), true);
+    }
+    private void DropObject()
+    {
     }
 
     private void Jump()
