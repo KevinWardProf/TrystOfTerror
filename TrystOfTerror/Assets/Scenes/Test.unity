@@ -833,6 +833,17 @@ MonoBehaviour:
     m_Bits: 8
   grounded: 1
   maxSlopeAngle: 0
+  BothHandGrabPos: {fileID: 0}
+  RightHandGrabPos: {fileID: 0}
+  LeftHandGrabPos: {fileID: 0}
+  rawPower: 0
+  ObjectInBothHand: 0
+  ObjectInRightHand: 0
+  ObjectInLeftHand: 0
+  ObjectGrabbed: {fileID: 0}
+  ObjectGrabbedRigidbody: {fileID: 0}
+  canDrop: 0
+  handsState: 0
   health: 0
   moraleState: 0
   col: {fileID: 0}
@@ -913,7 +924,7 @@ MonoBehaviour:
     m_ActionName: Gameplay/Walk[/Keyboard/shift]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
-  m_DefaultActionMap: Gameplay
+  m_DefaultActionMap: Gameplay Raised Hands
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 485516095}
 --- !u!1 &1310646247
@@ -929,7 +940,7 @@ GameObject:
   - component: {fileID: 1310646249}
   - component: {fileID: 1310646248}
   m_Layer: 3
-  m_Name: grodun
+  m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

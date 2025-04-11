@@ -268,23 +268,24 @@ public class PlayerController : MonoBehaviour
             && (handsState == HandsState.lowered && playerInput.actions["LeftHandHeavy"].triggered))
         {
             //Check if Both Hand Obj are not occupied
-
+            GrabObject(ObjectInBothHand, stats, false,true);
         }
         //Right Hand
         else if (handsState == HandsState.lowered && playerInput.actions["RightHandHeavy"].triggered)
         {
             //Check if Right Hand Obj occupied
+            GrabObject(ObjectInRightHand, stats, true, false);
 
         }
         //Left Hand
         else if (handsState == HandsState.lowered && playerInput.actions["LeftHandHeavy"].triggered)
         {
             //Check if Left Hand Obj occupied
-
+            GrabObject(ObjectInLeftHand, stats, false, false);
         }
     }
 
-    private void GrabObject(bool ObjectInHand, CharacterStats stats, bool isRightHand)
+    private void GrabObject(bool ObjectInHand, CharacterStats stats, bool isRightHand, bool isBothHands)
     {
         if (!ObjectInHand)
         {
@@ -303,7 +304,7 @@ public class PlayerController : MonoBehaviour
                         {
                             HoldObject(hit.transform.gameObject, 1);
                         }
-                        else 
+                        else
                         {
                             HoldObject(hit.transform.gameObject, 2);
                         }
@@ -311,9 +312,15 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
-        //Assume User has pushed 
+        else
+        {
+            if (canDrop)
+            {
+
+            }
+        }
     }
-    private void HoldObject(GameObject grabbedObject, int handIndex) 
+    private void HoldObject(GameObject grabbedObject, int handIndex)
     {
         ObjectGrabbed = grabbedObject;
         ObjectGrabbedRigidbody = ObjectGrabbed.GetComponent<Rigidbody>(); //assign Rigidbody
@@ -334,8 +341,15 @@ public class PlayerController : MonoBehaviour
                                                                   //make sure object doesnt collide with player, it can cause weird bugs
         Physics.IgnoreCollision(ObjectGrabbed.GetComponent<Collider>(), transform.GetComponent<Collider>(), true);
     }
-    private void DropObject()
+    private void DropObject(GameObject grabbedObject, bool isRightHand, bool isBothHand)
     {
+        ObjectGrabbed = grabbedObject;
+        ObjectGrabbedRigidbody = ObjectGrabbed.GetComponent<Rigidbody>(); //assign Rigidbody
+        Physics.IgnoreCollision(ObjectGrabbed.GetComponent<Collider>(), transform.GetComponent<Collider>(), true);
+        ObjectGrabbedRigidbody.isKinematic = false;
+        ObjectGrabbedRigidbody.transform.parent = null;
+        ObjectGrabbed.layer = 0; //change the object layer to the holdLayer
+       // = null;
     }
 
     private void Jump()
