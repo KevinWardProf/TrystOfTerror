@@ -4,11 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.VisualScripting;
 using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.HID;
+using UnityEngine.InputSystem.Interactions;
 using UnityEngine.Pool;
 
 public class PlayerController : MonoBehaviour
@@ -63,15 +65,15 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Whether we want to use raw value or the calculated throw force.")]
     public bool rawPower;
     //grabbedObjectRotationSpeed is Calculated in stats
-    public bool IsObjectInBothHand;
+    public bool IsObjectInBothHands;
     public bool IsObjectInRightHand;
     public bool IsObjectInLeftHand;
     [SerializeField]
-    private GameObject currentlyGrabbedObject; 
+    //private GameObject currentlyGrabbedObject; 
     public GameObject ObjectGrabbedInBothHands;
     public GameObject ObjectGrabbedInRightHand;
     public GameObject ObjectGrabbedInLeftHand;
-    public Rigidbody currentlyGrabbedObjectRigidbody;
+    //public Rigidbody currentlyGrabbedObjectRigidbody;
     public bool canDrop;
     public enum HandsState { lowered, raised };
     public HandsState handsState;
@@ -83,6 +85,7 @@ public class PlayerController : MonoBehaviour
     public CharacterStats stats;
     //Inputs
     private PlayerInput playerInput;
+    private GameControls gameControls;
 
     [Header("Misc")]
     public Collider col;
@@ -93,15 +96,17 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        stats = new CharacterStats(); //Todo add settings list ref/character creation??
+        //TODO some error handling here.
+        stats = GetComponent<CharacterStats>(); //Todo add settings list ref/character creation??
+        stats.InitializeCharacterStats(); //TODO This will be replaced by a call to a stats sheet0
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
         readyToJump = true;
         startYScale = 1f;
         camera = GameObject.FindWithTag("MainCamera");
-        playerInput = GetComponent<PlayerInput>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = true;
+        SubcribeToInputActionsForGameControls();
     }
 
     private void Update()
@@ -121,7 +126,9 @@ public class PlayerController : MonoBehaviour
         }
         Debug.DrawRay(col.bounds.center, Vector3.down * (col.bounds.extents.y + 5f), rayColor);
 
-        HandleInput();
+        //HandleInput();
+        //GrabWithHand();//TODO remove this debug method
+        HandleHands();
         SpeedControl();
         MovementStateHandler();
 
@@ -135,19 +142,35 @@ public class PlayerController : MonoBehaviour
     {
         HandleMovement();
         HandleLook();
+
+    }
+
+    /// <summary>
+    /// This method wraps all of the necessary subcriptions needed get the references needed to perform inputs for the player.
+    /// </summary>
+    private void SubcribeToInputActionsForGameControls()
+    {
+        gameControls = new GameControls();
+        gameControls.GameplayLoweredHands.Enable(); //TODO we will need to make this into a function with its own controls to swap between inputs, ie. enable and disable for the player different control schemes
+        //gameControls.GameplayLoweredHands.RightHandHeavy.started += GrabWithHand;
+        //gameControls.GameplayLoweredHands.RightHandHeavy.performed += GrabWithHand;
+        //gameControls.GameplayLoweredHands.RightHandHeavy.canceled += GrabWithHand;
+        //gameControls.GameplayLoweredHands.RightHandLight.started += GrabWithHand;
+        //gameControls.GameplayLoweredHands.RightHandLight.performed += GrabWithHand;
+        //gameControls.GameplayLoweredHands.RightHandLight.canceled += GrabWithHand;
     }
 
     private void MovementStateHandler()
     {
         // Mode - Crouching
-        if (playerInput.actions["Crouch"].ReadValue<float>() == 1)
+        if (gameControls.GameplayLoweredHands.Crouch.ReadValue<float>() == 1)
         {
             movementState = MovementState.crouching;
             moveSpeed = crouchSpeed;
         }
 
         // Mode - Walking
-        else if (grounded && playerInput.actions["Walk"].ReadValue<float>() == 1)
+        else if (grounded && gameControls.GameplayLoweredHands.Walk.ReadValue<float>() == 1)
         {
             movementState = MovementState.walking;
             moveSpeed = walkSpeed;
@@ -192,7 +215,7 @@ public class PlayerController : MonoBehaviour
     public void HandleMovement()
     {
         // calculate movement direction
-        Vector2 moveInput = playerInput.actions["Move"].ReadValue<Vector2>();
+        Vector2 moveInput = gameControls.GameplayLoweredHands.Move.ReadValue<Vector2>();
         Vector3 moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
         //moveDirection = moveDirection.x * camera.transform.right + moveDirection.z * camera.transform.forward; //Unless we are flying, this does not work.
         //moveSpeed = moveSpeed + stats.Attributes.agility.GetValue(); //Maybe we should calculate this when setting up character stats //TODO
@@ -223,9 +246,9 @@ public class PlayerController : MonoBehaviour
     {
         camera.transform.position = head.transform.position;
         Physics.Raycast(camera.transform.position, Vector3.forward, camera.transform.position.y + 5f);
-        Debug.DrawRay(camera.transform.position, Vector3.forward * (camera.transform.position.y + 5f), Color.blue);
+        //Debug.DrawRay(camera.transform.position, Vector3.forward * (camera.transform.position.y + 5f), Color.blue);
 
-        Vector2 lookInput = playerInput.actions["Look"].ReadValue<Vector2>();
+        Vector2 lookInput = gameControls.GameplayLoweredHands.Look.ReadValue<Vector2>();
 
         yRotation += lookInput.x * Time.deltaTime * mouseSensitivity;
         xRotation -= lookInput.y * Time.deltaTime * mouseSensitivity;
@@ -241,7 +264,7 @@ public class PlayerController : MonoBehaviour
         // when to value -- todo
 
         // when to jump
-        if (playerInput.actions["Jump"].triggered && readyToJump && grounded)
+        if (gameControls.GameplayLoweredHands.Jump.triggered && readyToJump && grounded)
         {
             readyToJump = false;
 
@@ -253,7 +276,7 @@ public class PlayerController : MonoBehaviour
         //Crouch
 
         // start crouch
-        if (playerInput.actions["Crouch"].ReadValue<float>() == 1)
+        if (gameControls.GameplayLoweredHands.Crouch.ReadValue<float>() == 1)
         {
             transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
             if (isCrouching == false)
@@ -268,50 +291,126 @@ public class PlayerController : MonoBehaviour
             isCrouching = false;
         }
 
-        //Handle Grabbing
+        //HandleHands();
+        
+    }
+
+    private void HandleHands()
+    {
+        float rightHandHeavyValue = gameControls.GameplayLoweredHands.RightHandHeavy.ReadValue<float>();
+        float leftHandHeavyValue = gameControls.GameplayLoweredHands.LeftHandHeavy.ReadValue<float>();
+        float rightHandLightValue = gameControls.GameplayLoweredHands.RightHandHeavy.ReadValue<float>();
+        float leftHandLightValue = gameControls.GameplayLoweredHands.LeftHandHeavy.ReadValue<float>();
+        //Handle Grabbing -- TODO Feel like this should be moved to its own script
+        //Also we may have to refactor this code so that its for each hand, they essentially have their own copy of what should have with grab, hold, drop, throw
         //Two Hands
-        if ((handsState == HandsState.lowered && playerInput.actions["RightHandHeavy"].triggered)
-            && (handsState == HandsState.lowered && playerInput.actions["LeftHandHeavy"].triggered))
+        if (handsState == HandsState.lowered && rightHandHeavyValue > 0f
+            && leftHandHeavyValue > 0f && IsObjectInRightHand == false && IsObjectInLeftHand == false)
         {
+            Debug.Log("Both Hands");
             //Check if Both Hand Obj are not occupied
-            GrabObject(IsObjectInBothHand, stats, false, false, true);
+            GrabObject(IsObjectInBothHands, stats, false, false, true);
+        }
+        else if (handsState == HandsState.lowered && (rightHandHeavyValue > 0f
+            && leftHandHeavyValue > 0f) && IsObjectInBothHands == true) //TODO issue, we need to check when a button is released.
+        {
+            Debug.Log("Dropping from Both Hands");
+            canDrop = true;
+            StopClipping(ObjectGrabbedInBothHands);
+            DropObject(ObjectGrabbedInBothHands, ref IsObjectInBothHands);
         }
         //Right Hand
-        else if (handsState == HandsState.lowered && playerInput.actions["RightHandHeavy"].triggered)
+        if (handsState == HandsState.lowered && rightHandHeavyValue > 0f)
         {
+            Debug.Log("Right Hand");
             //Check if Right Hand Obj occupied
             GrabObject(IsObjectInRightHand, stats, true, false, false);
-
         }
-        //Left Hand
-        else if (handsState == HandsState.lowered && playerInput.actions["LeftHandHeavy"].triggered)
+        else if (handsState == HandsState.lowered && IsObjectInRightHand && rightHandHeavyValue == 0f) //TODO issue, we need to check when a button is released.
         {
+            Debug.Log("Dropping from Right Hand");
+            canDrop = true;
+            StopClipping(ObjectGrabbedInRightHand);
+            DropObject(ObjectGrabbedInRightHand, ref IsObjectInRightHand);
+        }
+
+        //Left Hand
+        if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && !IsObjectInBothHands)
+        {
+            Debug.Log("Left Hand");
             //Check if Left Hand Obj occupied
             GrabObject(IsObjectInLeftHand, stats, false, true, false);
+        }
+        else if (handsState == HandsState.lowered && IsObjectInLeftHand && leftHandHeavyValue == 0f) //TODO issue, we need to check when a button is released.
+        {
+            Debug.Log("Dropping from Left Hand");
+            canDrop = true;
+            StopClipping(ObjectGrabbedInLeftHand);
+            DropObject(ObjectGrabbedInLeftHand, ref IsObjectInLeftHand);
+        }
+
+
+        ///Handle Rotating a grabbed object
+        if ((handsState == HandsState.lowered && (rightHandHeavyValue > 0f)
+            && leftHandHeavyValue > 0f) && IsObjectInRightHand == false && IsObjectInLeftHand == false)
+        {
+            MoveObject(ObjectGrabbedInBothHands, BothHandGrabPos.position);
+            RotateObject(ObjectGrabbedInBothHands, true, false, false);
+            if (rightHandLightValue == 1f && leftHandLightValue == 1f && canDrop)
+            { //TODO handle light (RB+LB)
+                StopClipping(ObjectGrabbedInBothHands);
+                ThrowObject(ObjectGrabbedInBothHands, ref IsObjectInBothHands, stats);
+            }
+        }
+        if (handsState == HandsState.lowered && rightHandHeavyValue > 0f && ObjectGrabbedInRightHand != null)//is HoldInteraction)
+        {// using an else if here 
+            MoveObject(ObjectGrabbedInRightHand, RightHandGrabPos.position);
+            RotateObject(ObjectGrabbedInRightHand, false, true, false);
+            if (rightHandLightValue == 1f && canDrop)
+            {
+                StopClipping(ObjectGrabbedInRightHand);
+                ThrowObject(ObjectGrabbedInRightHand, ref IsObjectInRightHand, stats);
+            }
+        }
+        else if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && ObjectGrabbedInLeftHand != null)
+        {
+            MoveObject(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
+            RotateObject(ObjectGrabbedInLeftHand, false, false, true);
+            if (leftHandLightValue == 1f && canDrop)
+            {
+                StopClipping(ObjectGrabbedInLeftHand);
+                ThrowObject(ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, stats);
+            }
         }
     }
 
     private void GrabObject(bool ObjectInHand, CharacterStats stats, bool isRightHand, bool isLeftHand, bool isBothHands)
     {
+        Debug.Log("Grab Object");
         if (!ObjectInHand)
         {
-            RaycastHit hit;
-            if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, stats.grabRange))
+            RaycastHit hit; //TODO Figure out why this won't aim properly. Something to do with direction??
+            if (Physics.Raycast(camera.transform.position, camera.transform.forward, out hit, 10f))
             {
+                Debug.DrawRay(camera.transform.position, camera.transform.forward * 20f, Color.cyan);
+                Debug.Log("Joan sees " + hit.transform.name);
                 if (hit.transform.gameObject.tag == "Prop")
                 {
                     if (isBothHands && hit.transform.gameObject.GetComponent<Prop>().needsTwoHandsToPickUp)
                     {
+                        Debug.Log("Two Hand Sees Prop");
                         HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
                     }
                     else
                     {
                         if (isRightHand)
                         {
+                            Debug.Log("Right Hand Sees Prop");
                             HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
                         }
                         else if (isLeftHand)
                         {
+                            Debug.Log("Left Hand Sees Prop");
                             HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
                         }
                     }
@@ -320,6 +419,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            Debug.Log("Drop Object in Grab Object");
             if (canDrop)
             {
                 //So we have a problem, how do know which object to drop
@@ -330,17 +430,17 @@ public class PlayerController : MonoBehaviour
                 //access it each time that we need to manipulate it
                 if (isBothHands)
                 {
-                    //StopClipping();
+                    StopClipping(ObjectGrabbedInBothHands);
                     DropObject(ObjectGrabbedInBothHands, ref isBothHands);
                 }
                 else if (isRightHand)
                 {
-                    //StopClipping();
+                    StopClipping(ObjectGrabbedInRightHand);
                     DropObject(ObjectGrabbedInRightHand, ref isRightHand);
                 }
                 else if (isLeftHand) 
                 {
-                    //StopClipping();
+                    StopClipping(ObjectGrabbedInLeftHand);
                     DropObject(ObjectGrabbedInLeftHand, ref isLeftHand);
                 }
             }
@@ -348,37 +448,49 @@ public class PlayerController : MonoBehaviour
     }
     private void HoldObject(GameObject grabbedObject, bool isRight, bool isLeft, bool isBothHands)
     {
-        currentlyGrabbedObject = grabbedObject;
-        currentlyGrabbedObjectRigidbody = currentlyGrabbedObject.GetComponent<Rigidbody>(); //assign Rigidbody
-        currentlyGrabbedObjectRigidbody.isKinematic = true;
+        //currentlyGrabbedObject = grabbedObject;
+        //currentlyGrabbedObjectRigidbody = currentlyGrabbedObject.GetComponent<Rigidbody>(); //assign Rigidbody
+        //currentlyGrabbedObjectRigidbody.isKinematic = true;
+        grabbedObject.GetComponent<Rigidbody>().isKinematic = true;
         if (isBothHands)
         {
-            currentlyGrabbedObjectRigidbody.transform.parent = BothHandGrabPos.transform; //parent object to holdposition
+            grabbedObject.transform.parent = BothHandGrabPos.transform; //parent object to holdposition
+            IsObjectInBothHands = true;
+            ObjectGrabbedInBothHands = grabbedObject;
         }
         else if (isRight)
         {
-            currentlyGrabbedObjectRigidbody.transform.parent = RightHandGrabPos.transform; //parent object to holdposition
+            grabbedObject.transform.parent = RightHandGrabPos.transform; //parent object to holdposition
+            IsObjectInRightHand = true;
+            ObjectGrabbedInRightHand = grabbedObject;
         }
         else if (isLeft)
         {
-            currentlyGrabbedObjectRigidbody.transform.parent = LeftHandGrabPos.transform; //parent object to holdposition
+            grabbedObject.transform.parent = LeftHandGrabPos.transform; //parent object to holdposition
+            IsObjectInLeftHand = true;
+            ObjectGrabbedInLeftHand = grabbedObject;
         }
-        currentlyGrabbedObject.layer = LayerMask.NameToLayer("holdLayer"); //change the object layer to the holdLayer
+        grabbedObject.layer = LayerMask.NameToLayer("HoldLayer"); //change the object layer to the holdLayer
                                                                   //make sure object doesnt collide with player, it can cause weird bugs
-        Physics.IgnoreCollision(currentlyGrabbedObject.GetComponent<Collider>(), transform.GetComponent<Collider>(), true);
+        Physics.IgnoreCollision(grabbedObject.GetComponent<Collider>(), transform.GetComponent<Collider>(), true);
     }
     private void DropObject(GameObject grabbedObject, ref bool objectInHand)
     {
-        currentlyGrabbedObject = grabbedObject;
-        currentlyGrabbedObjectRigidbody = currentlyGrabbedObject.GetComponent<Rigidbody>(); //assign Rigidbody
-        Physics.IgnoreCollision(currentlyGrabbedObject.GetComponent<Collider>(), transform.GetComponent<Collider>(), true);
-        currentlyGrabbedObjectRigidbody.isKinematic = false;
-        currentlyGrabbedObjectRigidbody.transform.parent = null;
-        currentlyGrabbedObject.layer = 0; //change the object layer to the holdLayer
-        currentlyGrabbedObject = null;
+        //currentlyGrabbedObject = grabbedObject;
+        //currentlyGrabbedObjectRigidbody = currentlyGrabbedObject.GetComponent<Rigidbody>(); //assign Rigidbody
+        Physics.IgnoreCollision(grabbedObject.GetComponent<Collider>(), transform.GetComponent<Collider>(), true);
+        grabbedObject.GetComponent<Rigidbody>().isKinematic = false;
+        grabbedObject.transform.parent = null;
+        grabbedObject.layer = 0; //change the object layer to the holdLayer
+        //currentlyGrabbedObject = null;
+        grabbedObject = null;
         objectInHand = false;
     }
-    void StopClipping(GameObject grabbedObject) //function only called when dropping/throwing
+    private void MoveObject(GameObject grappedObject, Vector3 grabbedObjectPostion) 
+    {
+        grappedObject.transform.position = grabbedObjectPostion;
+    }
+    private void StopClipping(GameObject grabbedObject) //function only called when dropping/throwing
     {
         var clipRange = Vector3.Distance(grabbedObject.transform.position, transform.position); //distance from holdPos to the camera
         //have to use RaycastAll as object blocks raycast in center screen
@@ -393,24 +505,24 @@ public class PlayerController : MonoBehaviour
             //if your player is small, change the -0.5f to a smaller number (in magnitude) ie: -0.1f
         }
     }
-    void ThrowObject(GameObject grabbedObject, ref bool objectInHand, CharacterStats stats)
+    private void ThrowObject(GameObject grabbedObject, ref bool objectInHand, CharacterStats stats)
     {
         //same as drop function, but add force to object before undefining it
-        currentlyGrabbedObject = grabbedObject;
-        currentlyGrabbedObjectRigidbody = currentlyGrabbedObject.GetComponent<Rigidbody>(); //assign Rigidbody
-        Physics.IgnoreCollision(currentlyGrabbedObject.GetComponent<Collider>(), GetComponent<Collider>(), true);
-        currentlyGrabbedObjectRigidbody.isKinematic = false;
-        currentlyGrabbedObjectRigidbody.transform.parent = null;
-        currentlyGrabbedObject.layer = 0; //change the object layer to the holdLayer
-        currentlyGrabbedObject = null;
-        currentlyGrabbedObjectRigidbody.AddForce(transform.forward * stats.throwForce);
+        //currentlyGrabbedObject = grabbedObject;
+        //currentlyGrabbedObjectRigidbody = currentlyGrabbedObject.GetComponent<Rigidbody>(); //assign Rigidbody
+        Physics.IgnoreCollision(grabbedObject.GetComponent<Rigidbody>().GetComponent<Collider>(), GetComponent<Collider>(), true);
+        grabbedObject.GetComponent<Rigidbody>().isKinematic = false;
+        grabbedObject.transform.parent = null;
+        grabbedObject.layer = 0; //change the object layer to the holdLayer
+        grabbedObject.GetComponent<Rigidbody>().AddForce(transform.forward * stats.throwForce);
+        grabbedObject = null;
         objectInHand = false;
     }
-    void RotateObject(GameObject grabbedObject, bool isBothHands, bool isRightHand, bool isLeftHand)
+    private void RotateObject(GameObject grabbedObject, bool isBothHands, bool isRightHand, bool isLeftHand)
     {
-        //if (playerInput.actions[""]) 
+        //if (gameControls.GameplayLoweredHands.[""]) 
         //{ }
-
+        //I'm deciding that this is context based. It can left or right attack light hold.
         if (Input.GetKey(KeyCode.R))//hold R key to rotate, change this to whatever key you want
         {
             canDrop = false; //make sure throwing can't occur during rotating

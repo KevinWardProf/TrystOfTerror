@@ -1,6 +1,7 @@
 ﻿using System;
+using UnityEngine;
 
-public class CharacterStats
+public class CharacterStats : MonoBehaviour
 {
     public string Name { get; set; }
     public int Level { get; set; }
@@ -11,7 +12,7 @@ public class CharacterStats
     public float grabRange;
     public CharacterAttributes Attributes { get; set; }
 
-    public CharacterStats() //Default/testing
+    public void InitializeCharacterStats() //Default/testing
     {
         Name = "Joan";
         Level = 1;

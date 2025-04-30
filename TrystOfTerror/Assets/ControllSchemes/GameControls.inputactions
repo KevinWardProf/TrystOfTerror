@@ -1,5 +1,5 @@
 {
-    "name": "PlayerControls",
+    "name": "GameControls",
     "maps": [
         {
             "name": "Gameplay Raised Hands",
@@ -72,6 +72,15 @@
                     "name": "RightHandHeavy",
                     "type": "Button",
                     "id": "b68ac83a-64d9-40dc-8a82-e8a4e9d3e5d2",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RightHandHeavy1 (deprecated)",
+                    "type": "Button",
+                    "id": "29d814a6-ce2b-49fd-ab5e-d1c5bc8dac13",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -534,7 +543,7 @@
                 {
                     "name": "",
                     "id": "47618dff-eb88-4cec-af97-a1998fa76254",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Keyboard>/r",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -554,39 +563,6 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "One Modifier",
-                    "id": "c59fc570-e271-4585-b893-ac8929a75aaa",
-                    "path": "OneModifier",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "RightHandHeavy",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "modifier",
-                    "id": "74a15855-eb98-4fa0-9151-2c2daae0bd01",
-                    "path": "<Keyboard>/alt",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "RightHandHeavy",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "binding",
-                    "id": "fa135497-6176-4dd3-828c-8d926b0cc720",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "RightHandHeavy",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
                     "name": "",
                     "id": "5e19b69f-6434-4088-a416-a9e5904d80fe",
                     "path": "<Gamepad>/rightTrigger",
@@ -599,8 +575,19 @@
                 },
                 {
                     "name": "",
+                    "id": "5b8f5f14-7e01-490c-a39a-f6a0b7dac141",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandHeavy",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "2e0f2547-adeb-4412-977c-6e9150f0b69c",
-                    "path": "<Mouse>/rightButton",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -620,42 +607,20 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "One Modifier",
-                    "id": "edc5e4de-49b5-4869-85de-1009e0524230",
-                    "path": "OneModifier",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "LeftHandHeavy",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "modifier",
-                    "id": "fe0cc0fb-5be5-4dd7-924b-00c0ab81ce6f",
-                    "path": "<Keyboard>/alt",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "LeftHandHeavy",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "binding",
-                    "id": "3285f9c1-4a07-4283-ba22-fda3ee90f341",
-                    "path": "<Mouse>/rightButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "LeftHandHeavy",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
                     "name": "",
                     "id": "959fdd84-a38c-4d67-b0c8-bd923ac130b8",
                     "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftHandHeavy",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1ab5e2d8-18f8-48ee-beda-105101c1029b",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -860,6 +825,50 @@
                     "action": "Lean",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "One Modifier",
+                    "id": "059e9305-cc5b-43c2-9444-3bf4b24b2598",
+                    "path": "OneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandHeavy1 (deprecated)",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "349374fc-4bf0-4cf6-856d-b607692f645e",
+                    "path": "<Keyboard>/alt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandHeavy1 (deprecated)",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "f80f2c24-9109-44a0-a7b4-5d0beb38fb96",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandHeavy1 (deprecated)",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "199152d8-9b55-460e-9298-b5e04435334c",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandHeavy1 (deprecated)",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
@@ -931,13 +940,31 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "RightHandHeavy",
+                    "name": "RightHandLightHold",
                     "type": "Button",
+                    "id": "2cb0a7bc-7611-44da-8fdb-bdb052bb0b06",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Hold",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RightHandHeavy",
+                    "type": "Value",
                     "id": "8c3d1578-3491-48d1-8dec-b5a8f7332b38",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
+                    "interactions": "Press(behavior=2)",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "RightHandHeavyHold",
+                    "type": "Value",
+                    "id": "49d14075-b27f-40ae-ab84-e54e7eec75e1",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Hold",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "LeftHandLight",
@@ -949,12 +976,30 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "LeftHandLightHold",
+                    "type": "Button",
+                    "id": "4139125c-b0f5-459a-90a2-4e75e573881e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Hold",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "LeftHandHeavy",
                     "type": "Button",
                     "id": "b9e19316-4b1b-4c28-9d72-9604713548c1",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LeftHandHeavyHold",
+                    "type": "Button",
+                    "id": "3dc5115a-3a2e-4e76-9801-cdce3366c80f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Hold",
                     "initialStateCheck": false
                 },
                 {
@@ -1297,8 +1342,8 @@
                 {
                     "name": "",
                     "id": "61ea680a-151b-4c16-9eb8-d3ad42f87692",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
+                    "path": "<Keyboard>/r",
+                    "interactions": "Hold,MultiTap,Press",
                     "processors": "",
                     "groups": "",
                     "action": "RightHandLight",
@@ -1309,45 +1354,12 @@
                     "name": "",
                     "id": "acb6dce0-9972-44f6-8a90-fea5528b6646",
                     "path": "<Gamepad>/rightShoulder",
-                    "interactions": "",
+                    "interactions": "Hold,MultiTap,Press",
                     "processors": "",
                     "groups": "",
                     "action": "RightHandLight",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "One Modifier",
-                    "id": "7fcacbb5-8a36-4d9a-9b5c-107952257678",
-                    "path": "OneModifier",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "RightHandHeavy",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "modifier",
-                    "id": "b2e10614-c82b-4f1d-a3d6-91d3d929d936",
-                    "path": "<Keyboard>/alt",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "RightHandHeavy",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "binding",
-                    "id": "2c43b81b-588e-4158-850c-92915a162581",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "RightHandHeavy",
-                    "isComposite": false,
-                    "isPartOfComposite": true
                 },
                 {
                     "name": "",
@@ -1362,8 +1374,19 @@
                 },
                 {
                     "name": "",
+                    "id": "d2975561-4121-4867-a2aa-0f163b7b80dd",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandHeavy",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "cb6ccea7-891e-4927-b707-338dcb578e68",
-                    "path": "<Mouse>/rightButton",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -1383,42 +1406,20 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "One Modifier",
-                    "id": "892b51ab-dcaf-4927-b02d-c1433ce9c7ed",
-                    "path": "OneModifier",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "LeftHandHeavy",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "modifier",
-                    "id": "8cddcb3a-a80f-4020-9e07-b9142d5c694c",
-                    "path": "<Keyboard>/alt",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "LeftHandHeavy",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "binding",
-                    "id": "ca9e7ea9-9a6c-441d-b6b3-ff1a1395a5d1",
-                    "path": "<Mouse>/rightButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "LeftHandHeavy",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
                     "name": "",
                     "id": "aeceae33-6def-482d-bdcc-15ba77d2c9d5",
                     "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftHandHeavy",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4bae456e-7908-405e-83d1-bffe74471011",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -1478,6 +1479,83 @@
                     "processors": "",
                     "groups": "",
                     "action": "Investigate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "21765a13-4d7f-4643-93a7-0630fd20b74a",
+                    "path": "<Keyboard>/r",
+                    "interactions": "Hold,MultiTap,Press",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandLightHold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d1f6836f-4e4f-41e0-8a1a-e2abc7735da1",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "Hold,MultiTap,Press",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandLightHold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b7197079-ce70-4fe2-9dab-c581f90c9043",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandHeavyHold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6605f8d8-cc3a-454f-8830-d1bfcd35c7cf",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftHandHeavyHold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5266a8d1-ca2f-42b7-957e-43010e7b865d",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftHandHeavyHold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "89c692b1-5288-485f-b9d3-e16b8ae1cb9b",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftHandLightHold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a88690f7-8c69-4854-8bf4-01ef546be401",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftHandLightHold",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
