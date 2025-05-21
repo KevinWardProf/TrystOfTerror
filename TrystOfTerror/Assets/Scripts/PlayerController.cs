@@ -303,6 +303,10 @@ public class PlayerController : MonoBehaviour
         float leftHandLightValue = gameControls.GameplayLoweredHands.LeftHandHeavy.ReadValue<float>();
         //Handle Grabbing -- TODO Feel like this should be moved to its own script
         //Also we may have to refactor this code so that its for each hand, they essentially have their own copy of what should have with grab, hold, drop, throw
+        //Debug.Log("Hands State: " + handsState == HandsState.lowered +  "Object is Right Hand: " + IsObjectInRightHand + "");
+        //Debug.Log("Released?: " + (gameControls.GameplayLoweredHands.RightHandHeavy.phase == InputActionPhase.Canceled));
+        //Debug.Log("Phase: " + gameControls.GameplayLoweredHands.RightHandHeavy.phase);
+        //Debug.Log("ISObjectInRightHand" + IsObjectInRightHand);
         //Two Hands
         if (handsState == HandsState.lowered && rightHandHeavyValue > 0f
             && leftHandHeavyValue > 0f && IsObjectInRightHand == false && IsObjectInLeftHand == false)
@@ -311,13 +315,13 @@ public class PlayerController : MonoBehaviour
             //Check if Both Hand Obj are not occupied
             GrabObject(IsObjectInBothHands, stats, false, false, true);
         }
-        else if (handsState == HandsState.lowered && (rightHandHeavyValue > 0f
-            && leftHandHeavyValue > 0f) && IsObjectInBothHands == true) //TODO issue, we need to check when a button is released.
+        else if (handsState == HandsState.lowered && (rightHandHeavyValue == 0f
+            && leftHandHeavyValue == 0f) && IsObjectInBothHands == true) //TODO issue, we need to check when a button is released.
         {
             Debug.Log("Dropping from Both Hands");
             canDrop = true;
             StopClipping(ObjectGrabbedInBothHands);
-            DropObject(ObjectGrabbedInBothHands, ref IsObjectInBothHands);
+            DropObject(ref ObjectGrabbedInBothHands, ref IsObjectInBothHands, "Both Hands");
         }
         //Right Hand
         if (handsState == HandsState.lowered && rightHandHeavyValue > 0f)
@@ -328,14 +332,15 @@ public class PlayerController : MonoBehaviour
         }
         else if (handsState == HandsState.lowered && IsObjectInRightHand && rightHandHeavyValue == 0f) //TODO issue, we need to check when a button is released.
         {
-            Debug.Log("Dropping from Right Hand");
+            Debug.Log("Dropping from Right Hand. rightHandHeavyValue: " + rightHandHeavyValue);
             canDrop = true;
             StopClipping(ObjectGrabbedInRightHand);
-            DropObject(ObjectGrabbedInRightHand, ref IsObjectInRightHand);
+            DropObject(ref ObjectGrabbedInRightHand, ref IsObjectInRightHand, "Right Hands");
+
         }
 
         //Left Hand
-        if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && !IsObjectInBothHands)
+        if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && IsObjectInBothHands == false)
         {
             Debug.Log("Left Hand");
             //Check if Left Hand Obj occupied
@@ -346,105 +351,105 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Dropping from Left Hand");
             canDrop = true;
             StopClipping(ObjectGrabbedInLeftHand);
-            DropObject(ObjectGrabbedInLeftHand, ref IsObjectInLeftHand);
+            DropObject(ref ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, "Left Hands");
         }
 
 
         ///Handle Rotating a grabbed object
-        if ((handsState == HandsState.lowered && (rightHandHeavyValue > 0f)
-            && leftHandHeavyValue > 0f) && IsObjectInRightHand == false && IsObjectInLeftHand == false)
-        {
-            MoveObject(ObjectGrabbedInBothHands, BothHandGrabPos.position);
-            RotateObject(ObjectGrabbedInBothHands, true, false, false);
-            if (rightHandLightValue == 1f && leftHandLightValue == 1f && canDrop)
-            { //TODO handle light (RB+LB)
-                StopClipping(ObjectGrabbedInBothHands);
-                ThrowObject(ObjectGrabbedInBothHands, ref IsObjectInBothHands, stats);
-            }
-        }
-        if (handsState == HandsState.lowered && rightHandHeavyValue > 0f && ObjectGrabbedInRightHand != null)//is HoldInteraction)
-        {// using an else if here 
-            MoveObject(ObjectGrabbedInRightHand, RightHandGrabPos.position);
-            RotateObject(ObjectGrabbedInRightHand, false, true, false);
-            if (rightHandLightValue == 1f && canDrop)
-            {
-                StopClipping(ObjectGrabbedInRightHand);
-                ThrowObject(ObjectGrabbedInRightHand, ref IsObjectInRightHand, stats);
-            }
-        }
-        else if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && ObjectGrabbedInLeftHand != null)
-        {
-            MoveObject(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
-            RotateObject(ObjectGrabbedInLeftHand, false, false, true);
-            if (leftHandLightValue == 1f && canDrop)
-            {
-                StopClipping(ObjectGrabbedInLeftHand);
-                ThrowObject(ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, stats);
-            }
-        }
+        //if ((handsState == HandsState.lowered && (rightHandHeavyValue > 0f)
+        //    && leftHandHeavyValue > 0f) && IsObjectInRightHand == false && IsObjectInLeftHand == false)
+        //{
+        //    MoveObject(ObjectGrabbedInBothHands, BothHandGrabPos.position);
+        //    RotateObject(ObjectGrabbedInBothHands, true, false, false);
+        //    if (rightHandLightValue == 1f && leftHandLightValue == 1f && canDrop)
+        //    { //TODO handle light (RB+LB)
+        //        StopClipping(ObjectGrabbedInBothHands);
+        //        ThrowObject(ObjectGrabbedInBothHands, ref IsObjectInBothHands, stats);
+        //    }
+        //}
+        //if (handsState == HandsState.lowered && rightHandHeavyValue > 0f && ObjectGrabbedInRightHand != null)//is HoldInteraction)
+        //{// using an else if here 
+        //    MoveObject(ObjectGrabbedInRightHand, RightHandGrabPos.position);
+        //    RotateObject(ObjectGrabbedInRightHand, false, true, false);
+        //    if (rightHandLightValue == 1f && canDrop)
+        //    {
+        //        StopClipping(ObjectGrabbedInRightHand);
+        //        ThrowObject(ObjectGrabbedInRightHand, ref IsObjectInRightHand, stats);
+        //    }
+        //}
+        //else if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && ObjectGrabbedInLeftHand != null)
+        //{
+        //    MoveObject(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
+        //    RotateObject(ObjectGrabbedInLeftHand, false, false, true);
+        //    if (leftHandLightValue == 1f && canDrop)
+        //    {
+        //        StopClipping(ObjectGrabbedInLeftHand);
+        //        ThrowObject(ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, stats);
+        //    }
+        //}
     }
 
     private void GrabObject(bool ObjectInHand, CharacterStats stats, bool isRightHand, bool isLeftHand, bool isBothHands)
     {
-        Debug.Log("Grab Object");
-        if (!ObjectInHand)
+       //Debug.Log("Grab Object");
+        if (ObjectInHand != true)
         {
             RaycastHit hit; //TODO Figure out why this won't aim properly. Something to do with direction??
             if (Physics.Raycast(camera.transform.position, camera.transform.forward, out hit, 10f))
             {
                 Debug.DrawRay(camera.transform.position, camera.transform.forward * 20f, Color.cyan);
-                Debug.Log("Joan sees " + hit.transform.name);
+                //Debug.Log("Joan sees " + hit.transform.name);
                 if (hit.transform.gameObject.tag == "Prop")
                 {
                     if (isBothHands && hit.transform.gameObject.GetComponent<Prop>().needsTwoHandsToPickUp)
                     {
-                        Debug.Log("Two Hand Sees Prop");
+                        //Debug.Log("Two Hand Sees Prop");
                         HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
                     }
                     else
                     {
                         if (isRightHand)
                         {
-                            Debug.Log("Right Hand Sees Prop");
+                            //Debug.Log("Right Hand Sees Prop");
                             HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
                         }
                         else if (isLeftHand)
                         {
-                            Debug.Log("Left Hand Sees Prop");
+                            //Debug.Log("Left Hand Sees Prop");
                             HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
                         }
                     }
                 }
             }
         }
-        else
-        {
-            Debug.Log("Drop Object in Grab Object");
-            if (canDrop)
-            {
-                //So we have a problem, how do know which object to drop
-                //When I call HoldObject, we the grabbed object as the grabbedObject
-                //This is unnecessary and we can remove references to it, but here we
-                //we need three containers to 'store' the obejct as a referenceble object
-                //Also maybe we should store/pass the rigidbody component, rather than constantly
-                //access it each time that we need to manipulate it
-                if (isBothHands)
-                {
-                    StopClipping(ObjectGrabbedInBothHands);
-                    DropObject(ObjectGrabbedInBothHands, ref isBothHands);
-                }
-                else if (isRightHand)
-                {
-                    StopClipping(ObjectGrabbedInRightHand);
-                    DropObject(ObjectGrabbedInRightHand, ref isRightHand);
-                }
-                else if (isLeftHand) 
-                {
-                    StopClipping(ObjectGrabbedInLeftHand);
-                    DropObject(ObjectGrabbedInLeftHand, ref isLeftHand);
-                }
-            }
-        }
+        //else//This never gets called?
+        //{
+        //    Debug.Log("Drop Object in Grab Object");
+        //    if (canDrop)
+        //    {
+        //        //So we have a problem, how do know which object to drop
+        //        //When I call HoldObject, we the grabbed object as the grabbedObject
+        //        //This is unnecessary and we can remove references to it, but here we
+        //        //we need three containers to 'store' the obejct as a referenceble object
+        //        //Also maybe we should store/pass the rigidbody component, rather than constantly
+        //        //access it each time that we need to manipulate it
+        //        if (isBothHands)
+        //        {
+        //            StopClipping(ObjectGrabbedInBothHands);
+        //            DropObject(ObjectGrabbedInBothHands, ref isBothHands);
+        //        }
+        //        else if (isRightHand)
+        //        {
+        //            StopClipping(ObjectGrabbedInRightHand);
+        //            DropObject(ObjectGrabbedInRightHand, ref isRightHand);
+        //        }
+        //        else if (isLeftHand) 
+        //        {
+        //            StopClipping(ObjectGrabbedInLeftHand);
+        //            DropObject(ObjectGrabbedInLeftHand, ref isLeftHand);
+        //        }
+        //    }
+        //}
     }
     private void HoldObject(GameObject grabbedObject, bool isRight, bool isLeft, bool isBothHands)
     {
@@ -455,18 +460,21 @@ public class PlayerController : MonoBehaviour
         if (isBothHands)
         {
             grabbedObject.transform.parent = BothHandGrabPos.transform; //parent object to holdposition
+            grabbedObject.transform.position = Vector3.Lerp(grabbedObject.transform.position, BothHandGrabPos.transform.position, 1f);
             IsObjectInBothHands = true;
             ObjectGrabbedInBothHands = grabbedObject;
         }
         else if (isRight)
         {
             grabbedObject.transform.parent = RightHandGrabPos.transform; //parent object to holdposition
+            grabbedObject.transform.position = Vector3.Lerp(grabbedObject.transform.position, RightHandGrabPos.transform.position, 1f);
             IsObjectInRightHand = true;
             ObjectGrabbedInRightHand = grabbedObject;
         }
         else if (isLeft)
         {
             grabbedObject.transform.parent = LeftHandGrabPos.transform; //parent object to holdposition
+            grabbedObject.transform.position = Vector3.Lerp(grabbedObject.transform.position, LeftHandGrabPos.transform.position, 1f);
             IsObjectInLeftHand = true;
             ObjectGrabbedInLeftHand = grabbedObject;
         }
@@ -474,8 +482,9 @@ public class PlayerController : MonoBehaviour
                                                                   //make sure object doesnt collide with player, it can cause weird bugs
         Physics.IgnoreCollision(grabbedObject.GetComponent<Collider>(), transform.GetComponent<Collider>(), true);
     }
-    private void DropObject(GameObject grabbedObject, ref bool objectInHand)
+    private void DropObject(ref GameObject grabbedObject, ref bool objectInHand, string where)
     {
+        Debug.Log("Drop Object from " + where);
         //currentlyGrabbedObject = grabbedObject;
         //currentlyGrabbedObjectRigidbody = currentlyGrabbedObject.GetComponent<Rigidbody>(); //assign Rigidbody
         Physics.IgnoreCollision(grabbedObject.GetComponent<Collider>(), transform.GetComponent<Collider>(), true);
@@ -483,7 +492,7 @@ public class PlayerController : MonoBehaviour
         grabbedObject.transform.parent = null;
         grabbedObject.layer = 0; //change the object layer to the holdLayer
         //currentlyGrabbedObject = null;
-        grabbedObject = null;
+        grabbedObject = null; //TODO this needs to directly reference the transform in both, right, left hands
         objectInHand = false;
     }
     private void MoveObject(GameObject grappedObject, Vector3 grabbedObjectPostion) 
