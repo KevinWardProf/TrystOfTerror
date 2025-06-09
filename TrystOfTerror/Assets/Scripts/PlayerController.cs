@@ -316,7 +316,7 @@ public class PlayerController : MonoBehaviour
             GrabObject(IsObjectInBothHands, stats, false, false, true);
         }
         else if (handsState == HandsState.lowered && (rightHandHeavyValue == 0f
-            && leftHandHeavyValue == 0f) && IsObjectInBothHands == true) //TODO issue, we need to check when a button is released.
+            || leftHandHeavyValue == 0f) && IsObjectInBothHands == true) //TODO issue, we need to check when a button is released.
         {
             Debug.Log("Dropping from Both Hands");
             canDrop = true;
@@ -359,7 +359,7 @@ public class PlayerController : MonoBehaviour
         //if ((handsState == HandsState.lowered && (rightHandHeavyValue > 0f)
         //    && leftHandHeavyValue > 0f) && IsObjectInRightHand == false && IsObjectInLeftHand == false)
         //{
-        //    MoveObject(ObjectGrabbedInBothHands, BothHandGrabPos.position);
+        //    MoveObjectToPosition(ObjectGrabbedInBothHands, BothHandGrabPos.position);
         //    RotateObject(ObjectGrabbedInBothHands, true, false, false);
         //    if (rightHandLightValue == 1f && leftHandLightValue == 1f && canDrop)
         //    { //TODO handle light (RB+LB)
@@ -369,7 +369,7 @@ public class PlayerController : MonoBehaviour
         //}
         //if (handsState == HandsState.lowered && rightHandHeavyValue > 0f && ObjectGrabbedInRightHand != null)//is HoldInteraction)
         //{// using an else if here 
-        //    MoveObject(ObjectGrabbedInRightHand, RightHandGrabPos.position);
+        //    MoveObjectToPosition(ObjectGrabbedInRightHand, RightHandGrabPos.position);
         //    RotateObject(ObjectGrabbedInRightHand, false, true, false);
         //    if (rightHandLightValue == 1f && canDrop)
         //    {
@@ -379,7 +379,7 @@ public class PlayerController : MonoBehaviour
         //}
         //else if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && ObjectGrabbedInLeftHand != null)
         //{
-        //    MoveObject(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
+        //    MoveObjectToPosition(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
         //    RotateObject(ObjectGrabbedInLeftHand, false, false, true);
         //    if (leftHandLightValue == 1f && canDrop)
         //    {
@@ -408,15 +408,23 @@ public class PlayerController : MonoBehaviour
                     }
                     else
                     {
-                        if (isRightHand)
+                        //TODO
+                        //We need to check if an object needs both hands to pick up...
+                        bool bothHands = hit.transform.gameObject.GetComponent<Prop>().needsTwoHandsToPickUp;
+                        if (isRightHand && bothHands == false)
                         {
                             //Debug.Log("Right Hand Sees Prop");
                             HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
                         }
-                        else if (isLeftHand)
+                        else if (isLeftHand && bothHands == false)
                         {
                             //Debug.Log("Left Hand Sees Prop");
                             HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
+                        }
+                        else 
+                        {
+                            //TODO add a UI prompt here or a sound effect to indicate you need to two hands to pick up.
+                            Debug.Log("The object is too heavy and requires two hands.");
                         }
                     }
                 }
@@ -467,7 +475,7 @@ public class PlayerController : MonoBehaviour
         else if (isRight)
         {
             grabbedObject.transform.parent = RightHandGrabPos.transform; //parent object to holdposition
-            grabbedObject.transform.position = Vector3.Lerp(grabbedObject.transform.position, RightHandGrabPos.transform.position, 1f);
+            MoveObjectToPosition(grabbedObject, RightHandGrabPos.transform.position);
             IsObjectInRightHand = true;
             ObjectGrabbedInRightHand = grabbedObject;
         }
@@ -495,9 +503,9 @@ public class PlayerController : MonoBehaviour
         grabbedObject = null; //TODO this needs to directly reference the transform in both, right, left hands
         objectInHand = false;
     }
-    private void MoveObject(GameObject grappedObject, Vector3 grabbedObjectPostion) 
+    private void MoveObjectToPosition(GameObject grappedObject, Vector3 toPosition) 
     {
-        grappedObject.transform.position = grabbedObjectPostion;
+       grappedObject.transform.position = Vector3.Lerp(grappedObject.transform.position, toPosition, 1f);
     }
     private void StopClipping(GameObject grabbedObject) //function only called when dropping/throwing
     {
@@ -514,7 +522,7 @@ public class PlayerController : MonoBehaviour
             //if your player is small, change the -0.5f to a smaller number (in magnitude) ie: -0.1f
         }
     }
-    private void ThrowObject(GameObject grabbedObject, ref bool objectInHand, CharacterStats stats)
+    private void ThrowObject(ref GameObject grabbedObject, ref bool objectInHand, CharacterStats stats)
     {
         //same as drop function, but add force to object before undefining it
         //currentlyGrabbedObject = grabbedObject;
