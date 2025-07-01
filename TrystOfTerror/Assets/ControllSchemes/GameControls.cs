@@ -962,6 +962,15 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""RightHandLightHoldDown"",
+                    ""type"": ""Value"",
+                    ""id"": ""f4d64257-bf5b-4ff1-9780-16a0febc9050"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
                     ""name"": ""RightHandLightHold"",
                     ""type"": ""Button"",
                     ""id"": ""2cb0a7bc-7611-44da-8fdb-bdb052bb0b06"",
@@ -996,6 +1005,15 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""LeftHandLightHoldDown"",
+                    ""type"": ""Value"",
+                    ""id"": ""0036086a-2f86-4edd-ae12-a5b9ea7bca81"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""LeftHandLightHold"",
@@ -1580,6 +1598,50 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
                     ""action"": ""LeftHandLightHold"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""20fa4fe9-05ec-4951-b4f6-4c85ee6762d8"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": ""Hold,MultiTap,Press"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RightHandLightHoldDown"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""27acfc97-6bf5-43e3-85b3-6081a40e9514"",
+                    ""path"": ""<Gamepad>/rightShoulder"",
+                    ""interactions"": ""Hold,MultiTap,Press"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RightHandLightHoldDown"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""730388c2-07c5-4104-a5ad-44364144a6dd"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LeftHandLightHoldDown"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1ef13277-2848-4f51-b6f5-14c09783e4b7"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LeftHandLightHoldDown"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -1764,10 +1826,12 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
         m_GameplayLoweredHands_Swap = m_GameplayLoweredHands.FindAction("Swap", throwIfNotFound: true);
         m_GameplayLoweredHands_Equipment = m_GameplayLoweredHands.FindAction("Equipment", throwIfNotFound: true);
         m_GameplayLoweredHands_RightHandLight = m_GameplayLoweredHands.FindAction("RightHandLight", throwIfNotFound: true);
+        m_GameplayLoweredHands_RightHandLightHoldDown = m_GameplayLoweredHands.FindAction("RightHandLightHoldDown", throwIfNotFound: true);
         m_GameplayLoweredHands_RightHandLightHold = m_GameplayLoweredHands.FindAction("RightHandLightHold", throwIfNotFound: true);
         m_GameplayLoweredHands_RightHandHeavy = m_GameplayLoweredHands.FindAction("RightHandHeavy", throwIfNotFound: true);
         m_GameplayLoweredHands_RightHandHeavyHold = m_GameplayLoweredHands.FindAction("RightHandHeavyHold", throwIfNotFound: true);
         m_GameplayLoweredHands_LeftHandLight = m_GameplayLoweredHands.FindAction("LeftHandLight", throwIfNotFound: true);
+        m_GameplayLoweredHands_LeftHandLightHoldDown = m_GameplayLoweredHands.FindAction("LeftHandLightHoldDown", throwIfNotFound: true);
         m_GameplayLoweredHands_LeftHandLightHold = m_GameplayLoweredHands.FindAction("LeftHandLightHold", throwIfNotFound: true);
         m_GameplayLoweredHands_LeftHandHeavy = m_GameplayLoweredHands.FindAction("LeftHandHeavy", throwIfNotFound: true);
         m_GameplayLoweredHands_LeftHandHeavyHold = m_GameplayLoweredHands.FindAction("LeftHandHeavyHold", throwIfNotFound: true);
@@ -2087,10 +2151,12 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_GameplayLoweredHands_Swap;
     private readonly InputAction m_GameplayLoweredHands_Equipment;
     private readonly InputAction m_GameplayLoweredHands_RightHandLight;
+    private readonly InputAction m_GameplayLoweredHands_RightHandLightHoldDown;
     private readonly InputAction m_GameplayLoweredHands_RightHandLightHold;
     private readonly InputAction m_GameplayLoweredHands_RightHandHeavy;
     private readonly InputAction m_GameplayLoweredHands_RightHandHeavyHold;
     private readonly InputAction m_GameplayLoweredHands_LeftHandLight;
+    private readonly InputAction m_GameplayLoweredHands_LeftHandLightHoldDown;
     private readonly InputAction m_GameplayLoweredHands_LeftHandLightHold;
     private readonly InputAction m_GameplayLoweredHands_LeftHandHeavy;
     private readonly InputAction m_GameplayLoweredHands_LeftHandHeavyHold;
@@ -2108,10 +2174,12 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
         public InputAction @Swap => m_Wrapper.m_GameplayLoweredHands_Swap;
         public InputAction @Equipment => m_Wrapper.m_GameplayLoweredHands_Equipment;
         public InputAction @RightHandLight => m_Wrapper.m_GameplayLoweredHands_RightHandLight;
+        public InputAction @RightHandLightHoldDown => m_Wrapper.m_GameplayLoweredHands_RightHandLightHoldDown;
         public InputAction @RightHandLightHold => m_Wrapper.m_GameplayLoweredHands_RightHandLightHold;
         public InputAction @RightHandHeavy => m_Wrapper.m_GameplayLoweredHands_RightHandHeavy;
         public InputAction @RightHandHeavyHold => m_Wrapper.m_GameplayLoweredHands_RightHandHeavyHold;
         public InputAction @LeftHandLight => m_Wrapper.m_GameplayLoweredHands_LeftHandLight;
+        public InputAction @LeftHandLightHoldDown => m_Wrapper.m_GameplayLoweredHands_LeftHandLightHoldDown;
         public InputAction @LeftHandLightHold => m_Wrapper.m_GameplayLoweredHands_LeftHandLightHold;
         public InputAction @LeftHandHeavy => m_Wrapper.m_GameplayLoweredHands_LeftHandHeavy;
         public InputAction @LeftHandHeavyHold => m_Wrapper.m_GameplayLoweredHands_LeftHandHeavyHold;
@@ -2148,6 +2216,9 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
             @RightHandLight.started += instance.OnRightHandLight;
             @RightHandLight.performed += instance.OnRightHandLight;
             @RightHandLight.canceled += instance.OnRightHandLight;
+            @RightHandLightHoldDown.started += instance.OnRightHandLightHoldDown;
+            @RightHandLightHoldDown.performed += instance.OnRightHandLightHoldDown;
+            @RightHandLightHoldDown.canceled += instance.OnRightHandLightHoldDown;
             @RightHandLightHold.started += instance.OnRightHandLightHold;
             @RightHandLightHold.performed += instance.OnRightHandLightHold;
             @RightHandLightHold.canceled += instance.OnRightHandLightHold;
@@ -2160,6 +2231,9 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
             @LeftHandLight.started += instance.OnLeftHandLight;
             @LeftHandLight.performed += instance.OnLeftHandLight;
             @LeftHandLight.canceled += instance.OnLeftHandLight;
+            @LeftHandLightHoldDown.started += instance.OnLeftHandLightHoldDown;
+            @LeftHandLightHoldDown.performed += instance.OnLeftHandLightHoldDown;
+            @LeftHandLightHoldDown.canceled += instance.OnLeftHandLightHoldDown;
             @LeftHandLightHold.started += instance.OnLeftHandLightHold;
             @LeftHandLightHold.performed += instance.OnLeftHandLightHold;
             @LeftHandLightHold.canceled += instance.OnLeftHandLightHold;
@@ -2203,6 +2277,9 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
             @RightHandLight.started -= instance.OnRightHandLight;
             @RightHandLight.performed -= instance.OnRightHandLight;
             @RightHandLight.canceled -= instance.OnRightHandLight;
+            @RightHandLightHoldDown.started -= instance.OnRightHandLightHoldDown;
+            @RightHandLightHoldDown.performed -= instance.OnRightHandLightHoldDown;
+            @RightHandLightHoldDown.canceled -= instance.OnRightHandLightHoldDown;
             @RightHandLightHold.started -= instance.OnRightHandLightHold;
             @RightHandLightHold.performed -= instance.OnRightHandLightHold;
             @RightHandLightHold.canceled -= instance.OnRightHandLightHold;
@@ -2215,6 +2292,9 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
             @LeftHandLight.started -= instance.OnLeftHandLight;
             @LeftHandLight.performed -= instance.OnLeftHandLight;
             @LeftHandLight.canceled -= instance.OnLeftHandLight;
+            @LeftHandLightHoldDown.started -= instance.OnLeftHandLightHoldDown;
+            @LeftHandLightHoldDown.performed -= instance.OnLeftHandLightHoldDown;
+            @LeftHandLightHoldDown.canceled -= instance.OnLeftHandLightHoldDown;
             @LeftHandLightHold.started -= instance.OnLeftHandLightHold;
             @LeftHandLightHold.performed -= instance.OnLeftHandLightHold;
             @LeftHandLightHold.canceled -= instance.OnLeftHandLightHold;
@@ -2387,10 +2467,12 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
         void OnSwap(InputAction.CallbackContext context);
         void OnEquipment(InputAction.CallbackContext context);
         void OnRightHandLight(InputAction.CallbackContext context);
+        void OnRightHandLightHoldDown(InputAction.CallbackContext context);
         void OnRightHandLightHold(InputAction.CallbackContext context);
         void OnRightHandHeavy(InputAction.CallbackContext context);
         void OnRightHandHeavyHold(InputAction.CallbackContext context);
         void OnLeftHandLight(InputAction.CallbackContext context);
+        void OnLeftHandLightHoldDown(InputAction.CallbackContext context);
         void OnLeftHandLightHold(InputAction.CallbackContext context);
         void OnLeftHandHeavy(InputAction.CallbackContext context);
         void OnLeftHandHeavyHold(InputAction.CallbackContext context);

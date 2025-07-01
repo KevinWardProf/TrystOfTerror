@@ -299,20 +299,18 @@ public class PlayerController : MonoBehaviour
     {
         float rightHandHeavyValue = gameControls.GameplayLoweredHands.RightHandHeavy.ReadValue<float>();
         float leftHandHeavyValue = gameControls.GameplayLoweredHands.LeftHandHeavy.ReadValue<float>();
-        float rightHandLightValue = gameControls.GameplayLoweredHands.RightHandHeavy.ReadValue<float>();
-        float leftHandLightValue = gameControls.GameplayLoweredHands.LeftHandHeavy.ReadValue<float>();
+        float rightHandLightValue = gameControls.GameplayLoweredHands.RightHandLightHoldDown.ReadValue<float>();
+        float leftHandLightValue = gameControls.GameplayLoweredHands.LeftHandLightHoldDown.ReadValue<float>();
+        bool rightHandLightTapped = gameControls.GameplayLoweredHands.RightHandLight.phase == InputActionPhase.Performed;
+        bool leftHandLightTapped = gameControls.GameplayLoweredHands.LeftHandLight.phase == InputActionPhase.Performed;
         //Handle Grabbing -- TODO Feel like this should be moved to its own script
-        //Also we may have to refactor this code so that its for each hand, they essentially have their own copy of what should have with grab, hold, drop, throw
-        //Debug.Log("Hands State: " + handsState == HandsState.lowered +  "Object is Right Hand: " + IsObjectInRightHand + "");
-        //Debug.Log("Released?: " + (gameControls.GameplayLoweredHands.RightHandHeavy.phase == InputActionPhase.Canceled));
-        //Debug.Log("Phase: " + gameControls.GameplayLoweredHands.RightHandHeavy.phase);
-        //Debug.Log("ISObjectInRightHand" + IsObjectInRightHand);
         //Two Hands
         if (handsState == HandsState.lowered && rightHandHeavyValue > 0f
             && leftHandHeavyValue > 0f && IsObjectInRightHand == false && IsObjectInLeftHand == false)
         {
             Debug.Log("Both Hands");
             //Check if Both Hand Obj are not occupied
+            //TODO add check here for dragging objects, always two hands, does not move object to transform exactly, only x,z, not y
             GrabObject(IsObjectInBothHands, stats, false, false, true);
         }
         else if (handsState == HandsState.lowered && (rightHandHeavyValue == 0f
@@ -355,38 +353,41 @@ public class PlayerController : MonoBehaviour
         }
 
 
+        //TODO So in terms of throwing and rotating the object, we have a similar problem as to before. We want to do the same thing, but with one or two more
+        //button presses. IE. The current if statements always default being able to throw 
+        //TODO need to add checks for hold interaction on bumpers vs just a tap
         ///Handle Rotating a grabbed object
-        //if ((handsState == HandsState.lowered && (rightHandHeavyValue > 0f)
-        //    && leftHandHeavyValue > 0f) && IsObjectInRightHand == false && IsObjectInLeftHand == false)
-        //{
-        //    MoveObjectToPosition(ObjectGrabbedInBothHands, BothHandGrabPos.position);
-        //    RotateObject(ObjectGrabbedInBothHands, true, false, false);
-        //    if (rightHandLightValue == 1f && leftHandLightValue == 1f && canDrop)
-        //    { //TODO handle light (RB+LB)
-        //        StopClipping(ObjectGrabbedInBothHands);
-        //        ThrowObject(ObjectGrabbedInBothHands, ref IsObjectInBothHands, stats);
-        //    }
-        //}
-        //if (handsState == HandsState.lowered && rightHandHeavyValue > 0f && ObjectGrabbedInRightHand != null)//is HoldInteraction)
-        //{// using an else if here 
-        //    MoveObjectToPosition(ObjectGrabbedInRightHand, RightHandGrabPos.position);
-        //    RotateObject(ObjectGrabbedInRightHand, false, true, false);
-        //    if (rightHandLightValue == 1f && canDrop)
-        //    {
-        //        StopClipping(ObjectGrabbedInRightHand);
-        //        ThrowObject(ObjectGrabbedInRightHand, ref IsObjectInRightHand, stats);
-        //    }
-        //}
-        //else if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && ObjectGrabbedInLeftHand != null)
-        //{
-        //    MoveObjectToPosition(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
-        //    RotateObject(ObjectGrabbedInLeftHand, false, false, true);
-        //    if (leftHandLightValue == 1f && canDrop)
-        //    {
-        //        StopClipping(ObjectGrabbedInLeftHand);
-        //        ThrowObject(ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, stats);
-        //    }
-        //}
+        if ((handsState == HandsState.lowered && (rightHandHeavyValue > 0f)
+            && leftHandHeavyValue > 0f) && IsObjectInRightHand == false && IsObjectInLeftHand == false)
+        {
+            MoveObjectToPosition(ObjectGrabbedInBothHands, BothHandGrabPos.position);
+            RotateObject(ObjectGrabbedInBothHands, true, false, false);
+            if (rightHandLightValue == 1f && leftHandLightValue == 1f && canDrop)
+            { //TODO handle light (RB+LB)
+                StopClipping(ObjectGrabbedInBothHands);
+                ThrowObject(ref ObjectGrabbedInBothHands, ref IsObjectInBothHands, stats);
+            }
+        }
+        if (handsState == HandsState.lowered && rightHandHeavyValue > 0f && ObjectGrabbedInRightHand != null)//is HoldInteraction)
+        {// using an else if here 
+            MoveObjectToPosition(ObjectGrabbedInRightHand, RightHandGrabPos.position);
+            RotateObject(ObjectGrabbedInRightHand, false, true, false);
+            if (rightHandLightValue == 1f && canDrop)
+            {
+                StopClipping(ObjectGrabbedInRightHand);
+                ThrowObject(ref ObjectGrabbedInRightHand, ref IsObjectInRightHand, stats);
+            }
+        }
+        else if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && ObjectGrabbedInLeftHand != null)
+        {
+            MoveObjectToPosition(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
+            RotateObject(ObjectGrabbedInLeftHand, false, false, true);
+            if (leftHandLightValue == 1f && canDrop)
+            {
+                StopClipping(ObjectGrabbedInLeftHand);
+                ThrowObject(ref ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, stats);
+            }
+        }
     }
 
     private void GrabObject(bool ObjectInHand, CharacterStats stats, bool isRightHand, bool isLeftHand, bool isBothHands)
@@ -394,7 +395,7 @@ public class PlayerController : MonoBehaviour
        //Debug.Log("Grab Object");
         if (ObjectInHand != true)
         {
-            RaycastHit hit; //TODO Figure out why this won't aim properly. Something to do with direction??
+            RaycastHit hit;
             if (Physics.Raycast(camera.transform.position, camera.transform.forward, out hit, 10f))
             {
                 Debug.DrawRay(camera.transform.position, camera.transform.forward * 20f, Color.cyan);
@@ -408,8 +409,6 @@ public class PlayerController : MonoBehaviour
                     }
                     else
                     {
-                        //TODO
-                        //We need to check if an object needs both hands to pick up...
                         bool bothHands = hit.transform.gameObject.GetComponent<Prop>().needsTwoHandsToPickUp;
                         if (isRightHand && bothHands == false)
                         {

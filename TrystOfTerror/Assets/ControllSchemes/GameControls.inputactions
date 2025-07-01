@@ -940,6 +940,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "RightHandLightHoldDown",
+                    "type": "Value",
+                    "id": "f4d64257-bf5b-4ff1-9780-16a0febc9050",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
                     "name": "RightHandLightHold",
                     "type": "Button",
                     "id": "2cb0a7bc-7611-44da-8fdb-bdb052bb0b06",
@@ -974,6 +983,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "LeftHandLightHoldDown",
+                    "type": "Value",
+                    "id": "0036086a-2f86-4edd-ae12-a5b9ea7bca81",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "LeftHandLightHold",
@@ -1556,6 +1574,50 @@
                     "processors": "",
                     "groups": "",
                     "action": "LeftHandLightHold",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "20fa4fe9-05ec-4951-b4f6-4c85ee6762d8",
+                    "path": "<Keyboard>/r",
+                    "interactions": "Hold,MultiTap,Press",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandLightHoldDown",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "27acfc97-6bf5-43e3-85b3-6081a40e9514",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "Hold,MultiTap,Press",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightHandLightHoldDown",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "730388c2-07c5-4104-a5ad-44364144a6dd",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftHandLightHoldDown",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1ef13277-2848-4f51-b6f5-14c09783e4b7",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftHandLightHoldDown",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
