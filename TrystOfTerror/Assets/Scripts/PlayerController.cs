@@ -12,6 +12,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.HID;
 using UnityEngine.InputSystem.Interactions;
 using UnityEngine.Pool;
+using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -33,6 +34,7 @@ public class PlayerController : MonoBehaviour
     public GameObject head;
     public float lookSpeed;
     GameObject camera;
+    public bool canLook;
 
     [Header("Jumping")]
     public float jumpForce;
@@ -102,10 +104,11 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
         readyToJump = true;
+        canLook = true;
         startYScale = 1f;
         camera = GameObject.FindWithTag("MainCamera");
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = true;
+        UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+        UnityEngine.Cursor.visible = true;
         SubcribeToInputActionsForGameControls();
     }
 
@@ -244,19 +247,22 @@ public class PlayerController : MonoBehaviour
 
     private void HandleLook()
     {
-        camera.transform.position = head.transform.position;
-        Physics.Raycast(camera.transform.position, Vector3.forward, camera.transform.position.y + 5f);
-        //Debug.DrawRay(camera.transform.position, Vector3.forward * (camera.transform.position.y + 5f), Color.blue);
+        if (canLook) 
+        {
+            camera.transform.position = head.transform.position;
+            Physics.Raycast(camera.transform.position, Vector3.forward, camera.transform.position.y + 5f);
+            //Debug.DrawRay(camera.transform.position, Vector3.forward * (camera.transform.position.y + 5f), Color.blue);
 
-        Vector2 lookInput = gameControls.GameplayLoweredHands.Look.ReadValue<Vector2>();
+            Vector2 lookInput = gameControls.GameplayLoweredHands.Look.ReadValue<Vector2>();
 
-        yRotation += lookInput.x * Time.deltaTime * mouseSensitivity;
-        xRotation -= lookInput.y * Time.deltaTime * mouseSensitivity;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
-        head.transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
-        camera.transform.rotation = Quaternion.Lerp(camera.transform.rotation, head.transform.rotation, Time.deltaTime * lookSpeed);
-        orientation.rotation = Quaternion.Euler(0, yRotation, 0);
-        //orientation.transform.Rotate(new Vector3(0, yRotation,0) * lookSpeed, Space.World);
+            yRotation += lookInput.x * Time.deltaTime * mouseSensitivity;
+            xRotation -= lookInput.y * Time.deltaTime * mouseSensitivity;
+            xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+            head.transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
+            camera.transform.rotation = Quaternion.Lerp(camera.transform.rotation, head.transform.rotation, Time.deltaTime * lookSpeed);
+            orientation.rotation = Quaternion.Euler(0, yRotation, 0);
+            //orientation.transform.Rotate(new Vector3(0, yRotation,0) * lookSpeed, Space.World);
+        }
     }
 
     private void HandleInput()
@@ -292,7 +298,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //HandleHands();
-        
+
     }
 
     private void HandleHands()
@@ -303,96 +309,114 @@ public class PlayerController : MonoBehaviour
         float leftHandLightValue = gameControls.GameplayLoweredHands.LeftHandLightHoldDown.ReadValue<float>();
         bool rightHandLightTapped = gameControls.GameplayLoweredHands.RightHandLight.phase == InputActionPhase.Performed;
         bool leftHandLightTapped = gameControls.GameplayLoweredHands.LeftHandLight.phase == InputActionPhase.Performed;
-        //Handle Grabbing -- TODO Feel like this should be moved to its own script
-        //Two Hands
-        if (handsState == HandsState.lowered && rightHandHeavyValue > 0f
-            && leftHandHeavyValue > 0f && IsObjectInRightHand == false && IsObjectInLeftHand == false)
+        bool bothHandsLightTapped = rightHandLightTapped == true && leftHandLightTapped == true;
+        //Handle Grabbing -- TODO Feel like this should be moved to its own script, other npcs could use this script and we could move this feature
+        //to a seperate script so that other creatures who cant grab don't have to worry about this.
+        //TODO all of these states are going to be used when the hands are lowered, doesn't make sense to do this when I could use a bigger if to contain
+        //Will need to add in the future a section for when player has weapon in one hand, the off hand has no weapon, should work just like we have
+        //our hands lowered.
+        //TODO Issue: What if we have multiple objects in our hands? If not 
+        Debug.Log("RightHandLightValue: " + rightHandLightValue);
+        if (handsState == HandsState.lowered)
         {
-            Debug.Log("Both Hands");
-            //Check if Both Hand Obj are not occupied
-            //TODO add check here for dragging objects, always two hands, does not move object to transform exactly, only x,z, not y
-            GrabObject(IsObjectInBothHands, stats, false, false, true);
-        }
-        else if (handsState == HandsState.lowered && (rightHandHeavyValue == 0f
-            || leftHandHeavyValue == 0f) && IsObjectInBothHands == true) //TODO issue, we need to check when a button is released.
-        {
-            Debug.Log("Dropping from Both Hands");
-            canDrop = true;
-            StopClipping(ObjectGrabbedInBothHands);
-            DropObject(ref ObjectGrabbedInBothHands, ref IsObjectInBothHands, "Both Hands");
-        }
-        //Right Hand
-        if (handsState == HandsState.lowered && rightHandHeavyValue > 0f)
-        {
-            Debug.Log("Right Hand");
-            //Check if Right Hand Obj occupied
-            GrabObject(IsObjectInRightHand, stats, true, false, false);
-        }
-        else if (handsState == HandsState.lowered && IsObjectInRightHand && rightHandHeavyValue == 0f) //TODO issue, we need to check when a button is released.
-        {
-            Debug.Log("Dropping from Right Hand. rightHandHeavyValue: " + rightHandHeavyValue);
-            canDrop = true;
-            StopClipping(ObjectGrabbedInRightHand);
-            DropObject(ref ObjectGrabbedInRightHand, ref IsObjectInRightHand, "Right Hands");
-
-        }
-
-        //Left Hand
-        if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && IsObjectInBothHands == false)
-        {
-            Debug.Log("Left Hand");
-            //Check if Left Hand Obj occupied
-            GrabObject(IsObjectInLeftHand, stats, false, true, false);
-        }
-        else if (handsState == HandsState.lowered && IsObjectInLeftHand && leftHandHeavyValue == 0f) //TODO issue, we need to check when a button is released.
-        {
-            Debug.Log("Dropping from Left Hand");
-            canDrop = true;
-            StopClipping(ObjectGrabbedInLeftHand);
-            DropObject(ref ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, "Left Hands");
-        }
-
-
-        //TODO So in terms of throwing and rotating the object, we have a similar problem as to before. We want to do the same thing, but with one or two more
-        //button presses. IE. The current if statements always default being able to throw 
-        //TODO need to add checks for hold interaction on bumpers vs just a tap
-        ///Handle Rotating a grabbed object
-        if ((handsState == HandsState.lowered && (rightHandHeavyValue > 0f)
-            && leftHandHeavyValue > 0f) && IsObjectInRightHand == false && IsObjectInLeftHand == false)
-        {
-            MoveObjectToPosition(ObjectGrabbedInBothHands, BothHandGrabPos.position);
-            RotateObject(ObjectGrabbedInBothHands, true, false, false);
-            if (rightHandLightValue == 1f && leftHandLightValue == 1f && canDrop)
-            { //TODO handle light (RB+LB)
+            //Two Hands
+            if (rightHandHeavyValue > 0f
+                && leftHandHeavyValue > 0f && IsObjectInRightHand == false && IsObjectInLeftHand == false)
+            {
+                Debug.Log("Both Hands");
+                //Check if Both Hand Obj are not occupied
+                //TODO add check here for dragging objects, always two hands, does not move object to transform exactly, only x,z, not y
+                GrabObject(IsObjectInBothHands, stats, false, false, true, rightHandLightValue > 0f && leftHandLightValue > 0f, bothHandsLightTapped);
+            }
+            else if ((rightHandHeavyValue == 0f
+                || leftHandHeavyValue == 0f) && IsObjectInBothHands == true) //TODO issue, we need to check when a button is released.
+            {
+                Debug.Log("Dropping from Both Hands");
+                canDrop = true;
                 StopClipping(ObjectGrabbedInBothHands);
-                ThrowObject(ref ObjectGrabbedInBothHands, ref IsObjectInBothHands, stats);
+                DropObject(ref ObjectGrabbedInBothHands, ref IsObjectInBothHands, "Both Hands");
             }
-        }
-        if (handsState == HandsState.lowered && rightHandHeavyValue > 0f && ObjectGrabbedInRightHand != null)//is HoldInteraction)
-        {// using an else if here 
-            MoveObjectToPosition(ObjectGrabbedInRightHand, RightHandGrabPos.position);
-            RotateObject(ObjectGrabbedInRightHand, false, true, false);
-            if (rightHandLightValue == 1f && canDrop)
+            //Right Hand
+            if (rightHandHeavyValue > 0f)
             {
+                Debug.Log("Right Hand");
+                //Check if Right Hand Obj occupied
+                GrabObject(IsObjectInRightHand, stats, true, false, false, rightHandLightValue > 0f, rightHandLightTapped);
+
+            }
+            else if (IsObjectInRightHand && rightHandHeavyValue == 0f) //TODO issue, we need to check when a button is released.
+            {
+                Debug.Log("Dropping from Right Hand. rightHandHeavyValue: " + rightHandHeavyValue);
+                canDrop = true;
                 StopClipping(ObjectGrabbedInRightHand);
-                ThrowObject(ref ObjectGrabbedInRightHand, ref IsObjectInRightHand, stats);
+                DropObject(ref ObjectGrabbedInRightHand, ref IsObjectInRightHand, "Right Hands");
+
             }
-        }
-        else if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && ObjectGrabbedInLeftHand != null)
-        {
-            MoveObjectToPosition(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
-            RotateObject(ObjectGrabbedInLeftHand, false, false, true);
-            if (leftHandLightValue == 1f && canDrop)
+
+            //Left Hand
+            if (leftHandHeavyValue > 0f && IsObjectInBothHands == false)
             {
+                Debug.Log("Left Hand");
+                //Check if Left Hand Obj occupied
+                GrabObject(IsObjectInLeftHand, stats, false, true, false, leftHandLightValue > 0f, leftHandLightTapped);
+            }
+            else if (IsObjectInLeftHand && leftHandHeavyValue == 0f) //TODO issue, we need to check when a button is released.
+            {
+                Debug.Log("Dropping from Left Hand");
+                canDrop = true;
                 StopClipping(ObjectGrabbedInLeftHand);
-                ThrowObject(ref ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, stats);
+                DropObject(ref ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, "Left Hands");
             }
         }
+        else if (handsState == HandsState.raised)
+        {
+            //TODO add combat support for weapons, offhand grabbing
+            //TIME TO FIGHT MORTAL KOMBAT *UNCE*UNCE*UNCE*
+        }
+
+
+
+        //TODO 7/24/2025
+        //Issue: We cannot rotate the object and throw the object. Commented out code here is the first attempt, but I'm thinking its not the right move.
+        //It might be better to move this logic to the grabbing logic? We grab an object, then we want to rotate it. Conceptually, we should we switch states.
+        //Go from grabbed to rotate to grabbed again or from grabbed to rotate to throw or from grabbed to throw
+        ///Handle Rotating a grabbed object
+        //if ((handsState == HandsState.lowered && (rightHandHeavyValue > 0f)
+        //    && leftHandHeavyValue > 0f) && IsObjectInRightHand == false && IsObjectInLeftHand == false)
+        //{
+        //    MoveObjectToPosition(ObjectGrabbedInBothHands, BothHandGrabPos.position);
+        //    RotateObject(ObjectGrabbedInBothHands, true, false, false);
+        //    if (rightHandLightValue == 1f && leftHandLightValue == 1f && canDrop)
+        //    { //TODO handle light (RB+LB)
+        //        StopClipping(ObjectGrabbedInBothHands);
+        //        ThrowObject(ref ObjectGrabbedInBothHands, ref IsObjectInBothHands, stats);
+        //    }
+        //}
+        //if (handsState == HandsState.lowered && rightHandHeavyValue > 0f && ObjectGrabbedInRightHand != null)
+        //{
+        //    MoveObjectToPosition(ObjectGrabbedInRightHand, RightHandGrabPos.position);
+        //    RotateObject(ObjectGrabbedInRightHand, false, true, false);
+        //    if (rightHandLightValue == 1f && canDrop)
+        //    {
+        //        StopClipping(ObjectGrabbedInRightHand);
+        //        ThrowObject(ref ObjectGrabbedInRightHand, ref IsObjectInRightHand, stats);
+        //    }
+        //}
+        //else if (handsState == HandsState.lowered && leftHandHeavyValue > 0f && ObjectGrabbedInLeftHand != null)
+        //{
+        //    MoveObjectToPosition(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
+        //    RotateObject(ObjectGrabbedInLeftHand, false, false, true);
+        //    if (leftHandLightValue == 1f && canDrop)
+        //    {
+        //        StopClipping(ObjectGrabbedInLeftHand);
+        //        ThrowObject(ref ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, stats);
+        //    }
+        //}
     }
 
-    private void GrabObject(bool ObjectInHand, CharacterStats stats, bool isRightHand, bool isLeftHand, bool isBothHands)
+    private void GrabObject(bool ObjectInHand, CharacterStats stats, bool isRightHand, bool isLeftHand, bool isBothHands, bool rotateObject, bool throwObject)
     {
-       //Debug.Log("Grab Object");
+        //Debug.Log("Grab Object");
         if (ObjectInHand != true)
         {
             RaycastHit hit;
@@ -402,25 +426,74 @@ public class PlayerController : MonoBehaviour
                 //Debug.Log("Joan sees " + hit.transform.name);
                 if (hit.transform.gameObject.tag == "Prop")
                 {
-                    if (isBothHands && hit.transform.gameObject.GetComponent<Prop>().needsTwoHandsToPickUp)
+                    bool bothHands = hit.transform.gameObject.GetComponent<Prop>().needsTwoHandsToPickUp;
+                    if (isBothHands)
                     {
-                        //Debug.Log("Two Hand Sees Prop");
-                        HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
+                        if (rotateObject && ObjectGrabbedInBothHands != null)
+                        {
+                            MoveObjectToPosition(ObjectGrabbedInBothHands, BothHandGrabPos.position);
+                            RotateObject(ref ObjectGrabbedInBothHands, true, false, false);
+                            ///Throw Object
+                            if (throwObject && canDrop)
+                            {
+                                StopClipping(ObjectGrabbedInBothHands);
+                                ThrowObject(ref ObjectGrabbedInBothHands, ref IsObjectInBothHands, stats);
+                            }
+                        }
+                        else
+                        {
+                            canLook = true;
+                            //Debug.Log("Two Hand Sees Prop");
+                            HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
+                        }
                     }
                     else
                     {
-                        bool bothHands = hit.transform.gameObject.GetComponent<Prop>().needsTwoHandsToPickUp;
                         if (isRightHand && bothHands == false)
                         {
-                            //Debug.Log("Right Hand Sees Prop");
-                            HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
+                            //Debug.Log("RotateObject: " + rotateObject + "\nThrowObject: " + throwObject + "\nObjectGrabbedInRightHand: " + ObjectGrabbedInRightHand != null);
+                            Debug.Log($"ObjectInRightHand = {ObjectGrabbedInRightHand != null}");
+                            //Rotate the object, or throw
+                            if (rotateObject && ObjectGrabbedInRightHand != null)
+                            {
+                                canLook = false;
+                                //Debug.Log("Rotate " + ObjectGrabbedInRightHand.name + " canLook=" + canLook);
+                                MoveObjectToPosition(ObjectGrabbedInRightHand, RightHandGrabPos.position);
+                                RotateObject(ref ObjectGrabbedInRightHand, false, true, false);
+                                ///Throw Object
+                                if (throwObject && canDrop)
+                                {
+                                    StopClipping(ObjectGrabbedInRightHand);
+                                    ThrowObject(ref ObjectGrabbedInRightHand, ref IsObjectInRightHand, stats);
+                                }
+                            }
+                            else
+                            {
+                                //Debug.Log("Right Hand Sees Prop");
+                                HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
+                            }
                         }
                         else if (isLeftHand && bothHands == false)
                         {
-                            //Debug.Log("Left Hand Sees Prop");
-                            HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
+                            if (rotateObject && ObjectGrabbedInLeftHand != null)
+                            {
+                                MoveObjectToPosition(ObjectGrabbedInLeftHand, LeftHandGrabPos.position);
+                                RotateObject(ref ObjectGrabbedInLeftHand, false, false, true);
+                                ///Throw Object
+                                if (throwObject && canDrop)
+                                {
+                                    StopClipping(ObjectGrabbedInLeftHand);
+                                    ThrowObject(ref ObjectGrabbedInLeftHand, ref IsObjectInLeftHand, stats);
+                                }
+                            }
+                            else
+                            {
+                                canLook = true;
+                                //Debug.Log("Left Hand Sees Prop");
+                                HoldObject(hit.transform.gameObject, isRightHand, isLeftHand, isBothHands);
+                            }
                         }
-                        else 
+                        else
                         {
                             //TODO add a UI prompt here or a sound effect to indicate you need to two hands to pick up.
                             Debug.Log("The object is too heavy and requires two hands.");
@@ -458,6 +531,7 @@ public class PlayerController : MonoBehaviour
         //    }
         //}
     }
+
     private void HoldObject(GameObject grabbedObject, bool isRight, bool isLeft, bool isBothHands)
     {
         //currentlyGrabbedObject = grabbedObject;
@@ -502,9 +576,9 @@ public class PlayerController : MonoBehaviour
         grabbedObject = null; //TODO this needs to directly reference the transform in both, right, left hands
         objectInHand = false;
     }
-    private void MoveObjectToPosition(GameObject grappedObject, Vector3 toPosition) 
+    private void MoveObjectToPosition(GameObject grappedObject, Vector3 toPosition)
     {
-       grappedObject.transform.position = Vector3.Lerp(grappedObject.transform.position, toPosition, 1f);
+        grappedObject.transform.position = Vector3.Lerp(grappedObject.transform.position, toPosition, 1f);
     }
     private void StopClipping(GameObject grabbedObject) //function only called when dropping/throwing
     {
@@ -534,32 +608,42 @@ public class PlayerController : MonoBehaviour
         grabbedObject = null;
         objectInHand = false;
     }
-    private void RotateObject(GameObject grabbedObject, bool isBothHands, bool isRightHand, bool isLeftHand)
+    private void RotateObject( ref GameObject grabbedObject, bool isBothHands, bool isRightHand, bool isLeftHand)
     {
-        //if (gameControls.GameplayLoweredHands.[""]) 
-        //{ }
+        //Prevent Any Look or movement of the head by changing canLook flag to false
+        canLook = false;
+        //Rotate Head to towards rotating object
+
+        //rotate the object
+        Vector2 lookInput = gameControls.GameplayLoweredHands.Look.ReadValue<Vector2>();
+
+        yRotation += lookInput.x * Time.deltaTime * mouseSensitivity;
+        xRotation -= lookInput.y * Time.deltaTime * mouseSensitivity;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+        grabbedObject.transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
+
         //I'm deciding that this is context based. It can left or right attack light hold.
-        if (Input.GetKey(KeyCode.R))//hold R key to rotate, change this to whatever key you want
-        {
-            canDrop = false; //make sure throwing can't occur during rotating
+        //if (Input.GetKey(KeyCode.R))//hold R key to rotate, change this to whatever key you want
+        //{
+        //canDrop = false; //make sure throwing can't occur during rotating //TODO verify this is necesary
 
-            //disable player being able to look around
-            //mouseLookScript.verticalSensitivity = 0f;
-            //mouseLookScript.lateralSensitivity = 0f;
+        //disable player being able to look around TODO tutorial does not cover mouse look, we need to modify our own
+        //mouseLookScript.verticalSensitivity = 0f;
+        //mouseLookScript.lateralSensitivity = 0f;
 
-            //float XaxisRotation = Input.GetAxis("Mouse X") * rotationSensitivity;
-            //float YaxisRotation = Input.GetAxis("Mouse Y") * rotationSensitivity;
-            //rotate the object depending on mouse X-Y Axis
-            //grabbedObject.transform.Rotate(Vector3.down, XaxisRotation);
-            //grabbedObject.transform.Rotate(Vector3.right, YaxisRotation);
-        }
-        else
-        {
-            //re-enable player being able to look around
-            //mouseLookScript.verticalSensitivity = originalvalue;
-            //mouseLookScript.lateralSensitivity = originalvalue;
-            canDrop = true;
-        }
+        //float XaxisRotation = Input.GetAxis("Mouse X") * rotationSensitivity;
+        //float YaxisRotation = Input.GetAxis("Mouse Y") * rotationSensitivity;
+        //rotate the object depending on mouse X-Y Axis
+        //grabbedObject.transform.Rotate(Vector3.down, XaxisRotation);
+        // grabbedObject.transform.Rotate(Vector3.right, YaxisRotation);
+        //}
+        //else
+        //{
+        //re-enable player being able to look around TODO tutorial does not cover mouse look, we need to modify our own
+        //mouseLookScript.verticalSensitivity = originalvalue;
+        //mouseLookScript.lateralSensitivity = originalvalue;
+        //canDrop = true;
+        //  }
     }
     private void Jump()
     {
